@@ -1,0 +1,5 @@
+lerobot==0.4.2
+dm-tree==0.1.9
+peft==0.18.0
+flash-attn --no-build-isolation
+pyzmq==27.1.0
