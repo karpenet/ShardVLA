@@ -1,3 +1,3 @@
-from .groot_n1_policy import GrootPolicy
+from .groot_n1_policy import GrootBackbonePolicy
 
-__all__ = ["GrootPolicy"]
+__all__ = ["GrootBackbonePolicy"]
