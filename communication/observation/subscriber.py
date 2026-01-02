@@ -48,15 +48,6 @@ class ObservationSubscriber:
     Pulls observations from queue and processes them as fast as possible.
     """
 
-    NP_DTYPE = {
-    "bool": np.bool_,
-    "uint8": np.uint8,
-    "int32": np.int32,
-    "int64": np.int64,
-    "float16": np.float16,
-    "float32": np.float32,
-}
-    
     def __init__(self, config: Config):
         """
         Initialize observation subscriber.
@@ -98,16 +89,21 @@ class ObservationSubscriber:
         try:
             # Receive message (non-blocking with timeout)
             try:
-                header = self.socket.recv_json(zmq.NOBLOCK)  # frame 0
+                header = self.socket.recv_json()  # frame 0
                 input_dict = {}
 
                 for meta in header["meta"]:
                     msg = self.socket.recv(copy=False)      # next frame
+                    print(f"Message: {msg}")
                     data_tensor = memoryview(msg.buffer)      # zero-copy view
-                    data_tensor = np.frombuffer(data_tensor, dtype=np.dtype(self.NP_DTYPE[meta["dtype"]])).reshape(meta["shape"])
+                    dtype = np.dtype(meta["dtype"])
+                    data_tensor = np.frombuffer(data_tensor, dtype=dtype).reshape(meta["shape"])
+                    print(f"Data tensor: {data_tensor}")
                     input_dict[meta["name"]] = data_tensor
             except zmq.Again:
                 return None
+
+            print(f"Input dict: {input_dict}")
             
             # # Deserialize observation
             # obs = self._deserialize_observation(message)

@@ -5,7 +5,7 @@ import numpy as np
 from communication.observation.subscriber import ObservationSubscriber
 from communication.config import Config
 from models.gr00t.groot_n1_backbone import GR00TN15Backbone
-
+import threading
 
 class InferenceServer:
     def __init__(
@@ -15,6 +15,34 @@ class InferenceServer:
     ):
         self.backbone = backbone
         self.observation_subscriber = ObservationSubscriber(config)
+
+        self._run_stopped = threading.Event()
+        self._thread = None
+
+    def start(self):
+        self._run_stopped.clear()
+        self._thread = threading.Thread(target=self.run_forever, daemon=True)
+        self._thread.start()
+
+    def stop(self):
+        self._run_stopped.set()
+        if self._thread:
+            self._thread.join(timeout=5)
+        
+        # close sockets/context if you own them
+        self.observation_subscriber.close()
+
+
+    def run_forever(self):
+        # runs until stop() is called
+        while not self._run_stopped.is_set():
+            obs = self.observation_subscriber.get_latest_observation(timeout_ms=100)  # pick a small timeout
+            if obs is None:
+                continue  # no message yet, keep looping
+
+            # TODO: do inference / processing
+
+
 
     def forward(self, observation: Dict[str, np.ndarray]) -> torch.Tensor:
         # Get observation from subscriber
