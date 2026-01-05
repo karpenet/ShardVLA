@@ -10,6 +10,7 @@ from pathlib import Path
 # Add parent directory to path to import OpenVLA utilities
 sys.path.append(str(Path(__file__).parent.parent))
 
+from lerobot.policies.groot.processor_groot import make_groot_pre_post_processors
 from lerobot.utils.utils import auto_select_torch_device
 from inference_engine.inference_server import InferenceServer
 from inference_engine.inference_client import InferenceClient
@@ -96,7 +97,11 @@ if args.node_type == "high_node":
         MODEL_PATH,
         strict=False,
     )
-    server = InferenceServer(backbone=backbone)
+    preprocessor, _ = make_groot_pre_post_processors(
+        config=backbone.config,
+        dataset_stats=None,  # Pass None for dataset_stats to disable normalization (original GR00T doesn't normalize)
+    )
+    server = InferenceServer(backbone=backbone, preprocessor=preprocessor)
     print("[*] High node initialized. Use server.forward() to get observations and run inference.")
 
     server.start()

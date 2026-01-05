@@ -140,18 +140,16 @@ class GrootBackbonePolicy(PreTrainedPolicy):
         # Get device from model parameters
         device = next(self.parameters()).device
 
-        import ipdb; ipdb.set_trace()
-
         # Use bf16 autocast for inference to keep memory low and match backbone dtype
         with torch.autocast(device_type=device.type, dtype=torch.bfloat16, enabled=self.config.use_bf16):
             outputs = self._groot_model.get_embeddings(groot_inputs)
 
-        actions = outputs.get("action_pred")
+        # actions = outputs.get("action_pred")
 
-        original_action_dim = self.config.output_features["action"].shape[0]
-        actions = actions[:, :, :original_action_dim]
+        # original_action_dim = self.config.output_features["action"].shape[0]
+        # actions = actions[:, :, :original_action_dim]
 
-        return actions
+        return outputs
 
     @torch.no_grad()
     def select_action(self, batch: dict[str, Tensor]) -> Tensor:
@@ -294,8 +292,6 @@ class GrootActionHeadPolicy(PreTrainedPolicy):
 
         # Get device from model parameters
         device = next(self.parameters()).device
-
-        import ipdb; ipdb.set_trace()
 
         # Use bf16 autocast for inference to keep memory low and match backbone dtype
         with torch.autocast(device_type=device.type, dtype=torch.bfloat16, enabled=self.config.use_bf16):

@@ -91,6 +91,7 @@ class ObservationSubscriber:
             try:
                 header = self.socket.recv_json()  # frame 0
                 input_dict = {}
+                input_dict["task"] = header["task"]
 
                 for meta in header["meta"]:
                     msg = self.socket.recv(copy=False)      # next frame
@@ -103,7 +104,6 @@ class ObservationSubscriber:
             except zmq.Again:
                 return None
 
-            print(f"Input dict: {input_dict}")
             
             # # Deserialize observation
             # obs = self._deserialize_observation(message)

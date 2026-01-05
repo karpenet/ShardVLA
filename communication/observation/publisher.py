@@ -60,16 +60,21 @@ class ObservationPublisher:
         
         try:
             metadata, frames = [], []
+            header = {"sequence_number": self.sequence_number}
 
             for name, data_tensor in obs_dict.items():
-                data_tensor = np.ascontiguousarray(data_tensor)  # avoid copies later
-                metadata.append({"name": name, "dtype": str(data_tensor.dtype), "shape": data_tensor.shape})
-                frames.append(memoryview(data_tensor))
+                if name == "task":
+                    header["task"] = data_tensor
+                else:
+                    data_tensor = np.ascontiguousarray(data_tensor)  # avoid copies later
+                    metadata.append({"name": name, "dtype": str(data_tensor.dtype), "shape": data_tensor.shape})
+                    frames.append(memoryview(data_tensor))
 
-            
+            header["meta"] = metadata
+
             # Send via ZeroMQ (non-blocking with timeout)
             try:
-                self.socket.send_json({"sequence_number": self.sequence_number, "meta": metadata}, flags=zmq.NOBLOCK | zmq.SNDMORE)
+                self.socket.send_json(header, flags=zmq.NOBLOCK | zmq.SNDMORE)
                 for i, fr in enumerate(frames):
                     self.socket.send(fr, flags=(zmq.NOBLOCK | zmq.SNDMORE if i < len(frames)-1 else 0), copy=False)
                 self.sequence_number += 1
