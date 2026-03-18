@@ -1,5 +1,8 @@
-lerobot==0.4.2
+lerobot==0.4.3
 dm-tree==0.1.9
 peft==0.18.0
-flash-attn --no-build-isolation
+flash-attn
 pyzmq==27.1.0
+grpcio==1.78.0
+grpcio-tools==1.78.0
+protobuf>=6.31.1,<7.0.0
